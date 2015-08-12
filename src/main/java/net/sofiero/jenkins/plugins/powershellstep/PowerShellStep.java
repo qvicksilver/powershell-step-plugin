@@ -40,7 +40,7 @@ public class PowerShellStep extends DurableTaskStep {
 
         @Override
         public String getDisplayName() {
-            return "Windows PowserShell Script";
+            return "Windows PowerShell Script";
         }
 
         @Override
