@@ -6,6 +6,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jenkinsci.plugins.durabletask.DurableTaskDescriptor;
 import org.jenkinsci.plugins.durabletask.FileMonitoringTask;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -45,9 +47,8 @@ public final class PowerShellScript extends FileMonitoringTask {
         ), "UTF-8");
         c.getBatchFile2(ws).write(script, "UTF-8");
 
-        Launcher.ProcStarter ps = launcher.launch().cmds("cmd", "/c", c.getBatchFile1(ws).getRemote()).envs(envVars).pwd(ws);
+        Launcher.ProcStarter ps = launcher.launch().cmds("cmd", "/c", "\"\"" + c.getBatchFile1(ws) + "\"\"").envs(envVars).pwd(ws).quiet(true);
         try {
-            ps.quiet(true);
             listener.getLogger().println("[" + ws.getRemote().replaceFirst("^.+\\\\", "") + "] Running PowerShell script"); // details printed by cmd            
         } catch (Exception x) { // ?
             x.printStackTrace(listener.getLogger());
@@ -63,11 +64,25 @@ public final class PowerShellScript extends FileMonitoringTask {
         }
 
         public FilePath getBatchFile1(FilePath ws) {
-            return controlDir(ws).child("jenkins-wrap.bat");
+            try {
+                return controlDir(ws).child("jenkins-wrap.bat");
+            } catch (IOException ex) {
+                Logger.getLogger(PowerShellScript.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(PowerShellScript.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return null;
         }
 
         public FilePath getBatchFile2(FilePath ws) {
-            return controlDir(ws).child("jenkins-main.ps1");
+            try {
+                return controlDir(ws).child("jenkins-main.ps1");
+            } catch (IOException ex) {
+                Logger.getLogger(PowerShellScript.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(PowerShellScript.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return null;
         }
 
         private static final long serialVersionUID = 1L;
